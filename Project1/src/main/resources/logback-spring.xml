@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="kafka.host" source="spring.data.kafka.host"/>
+    <springProperty scope="context" name="kafka.port" source="spring.data.kafka.port"/>
+    <springProperty scope="context" name="kafka.topic" source="spring.data.kafka.topic"/>
+    <springProperty scope="context" name="ppName" source="spr"/>
+
+
+    <!-- magenta:洋红 -->
+    <!-- boldMagenta:粗红-->
+    <!-- cyan:青色 -->
+    <!-- white:白色 -->
+    <!-- magenta:洋红 -->
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) | %highlight(%-5level) [%X{trace_id}] [%X{clientId}] |%white(%method) | %green(%msg%n) "/>
+
+    <property name="FILE_LOG_PATTERN"
+              value="%date{yyyy-MM-dd HH:mm:ss}   %-5level  %thread [%X{trace_id}] [%X{clientId}] %file:%line  %logger  %method  %msg%n"/>
+
+    <property name="FILE_ERROR_PATTERN"
+              value="%date{yyyy-MM-dd HH:mm:ss}   %-5level  %thread [%X{trace_id}] [%X{clientId}] %file:%line  %logger  %method  %msg %ex{10}%n"/>
+
+
+    <property name="FILE_PATH"
+              value="/log"/>
+
+
+    <!--==================控制台日志========================================================================================-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <!--==================控制台日志========================================================================================-->
+
+
+    <!--==================写入文件========================================================================================-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        　　　　　　
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            　　　　　　　　　
+            <fileNamePattern>${FILE_PATH}/log//%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            　　　　　　　　　
+            <maxHistory>30</maxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>512MB</maxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+            　　　　　　
+        </rollingPolicy>
+        　　　　　　
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <!--==================写入文件========================================================================================-->
+
+    <!--==================异常日志==================-->
+    <appender name="error_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 只打印错误日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${FILE_PATH}/error_log//%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>512MB</maxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_ERROR_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!--==================异常日志==================-->
+
+
+    <!-- 通过tcp记录日志=================================================================================================== -->
+    <!-- <appender name="LDGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>127.0.0.1:4000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender> -->
+    <!-- 通过tcp记录日志=================================================================================================== -->
+    <!-- kafka记录日志=======================================================================================================-->
+    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+        <encoder charset="UTF-8">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <topic>${kafka.topic}</topic>
+        <!--        <topic>web-log1</topic>-->
+        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy"/>
+        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+        <!--使用固定分区的可选参数-->
+        <!--         <partition>0</partition>-->
+        <!--将日志时间戳包含到Kafka消息中的可选参数-->
+        <appendTimestamp>true</appendTimestamp>
+        <!-- each <producerConfig> translates to regular kafka-client config (format: key=value) -->
+        <!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
+        <!--bootstrap.servers是唯一必需的producerconfig-->
+        <producerConfig>bootstrap.servers=${kafka.host}:${kafka.port}</producerConfig>
+        <!--        <producerConfig>bootstrap.servers=127.0.0.1:9092</producerConfig>-->
+        <!--        <producerConfig>bootstrap.servers=47.99.46.53:9092</producerConfig>-->
+
+        <!-- 如果Kafka不可用，这是回退附加程序-->
+        <appender-ref ref="STDOUT"/>
+    </appender>
+    <!-- kafka记录日志=======================================================================================================-->
+    <!--redis的日志配置项============================================================================================================-->
+    <!--
+    <appender name="REDIS" class="com.cwbase.logback.RedisAppender">
+          <source>test-application</source>
+         type 可定为项目类型
+          <type>${type.name}</type>
+          redis ip
+          <host>127.0.0.1</host>
+           redis存放的key
+          <key>logstash:redis</key>
+          <tags>test01</tags>
+          <mdc>true</mdc>
+          <location>true</location>
+          <callerStackIndex>0</callerStackIndex>
+            additionalField添加附加字段 用于head插件显示
+             <additionalField>
+                 <key>MyKey</key>
+                 <value>MyValue</value>
+             </additionalField>
+             <additionalField>
+                 <key>MySecondKey</key>
+                 <value>MyOtherValue</value>
+             </additionalField>
+      </appender>
+
+      -->
+    <!--redis的日志配置项============================================================================================================-->
+
+    <logger name="org.apache.kafka" level="info" additivity="false"/>
+    <logger name="com.alibaba.dubbo" level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="error_file" />
+    </logger>
+
+    <logger name="com.lunz.fin.mapper" level="debug">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="error_file" />
+    </logger>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="error_file" />
+    </root>
+
+
+</configuration>

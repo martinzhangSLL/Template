@@ -78,67 +78,6 @@
         </encoder>
     </appender>
 
-    <!--==================异常日志==================-->
-
-
-    <!-- 通过tcp记录日志=================================================================================================== -->
-    <!-- <appender name="LDGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>127.0.0.1:4000</destination>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-    </appender> -->
-    <!-- 通过tcp记录日志=================================================================================================== -->
-    <!-- kafka记录日志=======================================================================================================-->
-    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-        <encoder charset="UTF-8">
-            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
-            <pattern>${FILE_LOG_PATTERN}</pattern>
-        </encoder>
-        <topic>${kafka.topic}</topic>
-        <!--        <topic>web-log1</topic>-->
-        <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy"/>
-        <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
-        <!--使用固定分区的可选参数-->
-        <!--         <partition>0</partition>-->
-        <!--将日志时间戳包含到Kafka消息中的可选参数-->
-        <appendTimestamp>true</appendTimestamp>
-        <!-- each <producerConfig> translates to regular kafka-client config (format: key=value) -->
-        <!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
-        <!--bootstrap.servers是唯一必需的producerconfig-->
-        <producerConfig>bootstrap.servers=${kafka.host}:${kafka.port}</producerConfig>
-        <!--        <producerConfig>bootstrap.servers=127.0.0.1:9092</producerConfig>-->
-        <!--        <producerConfig>bootstrap.servers=47.99.46.53:9092</producerConfig>-->
-
-        <!-- 如果Kafka不可用，这是回退附加程序-->
-        <appender-ref ref="STDOUT"/>
-    </appender>
-    <!-- kafka记录日志=======================================================================================================-->
-    <!--redis的日志配置项============================================================================================================-->
-    <!--
-    <appender name="REDIS" class="com.cwbase.logback.RedisAppender">
-          <source>test-application</source>
-         type 可定为项目类型
-          <type>${type.name}</type>
-          redis ip
-          <host>127.0.0.1</host>
-           redis存放的key
-          <key>logstash:redis</key>
-          <tags>test01</tags>
-          <mdc>true</mdc>
-          <location>true</location>
-          <callerStackIndex>0</callerStackIndex>
-            additionalField添加附加字段 用于head插件显示
-             <additionalField>
-                 <key>MyKey</key>
-                 <value>MyValue</value>
-             </additionalField>
-             <additionalField>
-                 <key>MySecondKey</key>
-                 <value>MyOtherValue</value>
-             </additionalField>
-      </appender>
-
-      -->
-    <!--redis的日志配置项============================================================================================================-->
 
     <logger name="org.apache.kafka" level="info" additivity="false"/>
     <logger name="com.alibaba.dubbo" level="info">
